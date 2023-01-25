@@ -13,6 +13,7 @@ There are :
 
 ### Efficiently Verifiable Proofs (NP-Proofs)
 The prover works hard, to make the verifier time a polynomial time.
+Those proofs are called "NP-Proofs".
 
 #### Examples of non ZK Proof
 ##### Claim: N is a product of 2 large primes
@@ -47,11 +48,11 @@ This is non ZK because verifier knows x after interaction.
 ##### Claim : the two graphs are isomorphic
 "isomorphic" means that they are equivalent, just drawn a little differently.
 
-!["Isomorphic graphs"](images/lecture1-isomorphic-graphs.png)
+!["Isomorphic graphs"](images/images-lecture1/lecture1-isomorphic-graphs.png)
 
 #### NP-Languages
 
-!["Efficiently Verifiable Proofs"](images/lecture1-NP-language.png)
+!["Efficiently Verifiable Proofs"](images/images-lecture1/lecture1-NP-language.png)
 
 Completeness = all true statements have a witness (proof)
 Soundness = none false statement have a witness (proof)
@@ -82,7 +83,7 @@ But for k round, the probability becomes 1/2^k, which is really hard to cheat if
 
 
 
-!["Interactive Proof for Quadratic Residue"](images/interactive-proof-for-quadratic-residue.png)
+!["Interactive Proof for Quadratic Residue"](images/images-lecture1/interactive-proof-for-quadratic-residue.png)
 
 
 ##### Notation
@@ -91,7 +92,7 @@ For all cheating prover strategy, Verifier will not accept except with negligibl
  
  ### Zero Knowledge : Definition
 
-!["Zero Knowledge: Definition - Simulation"](images/zk-definition-simulation.png)
+!["Zero Knowledge: Definition - Simulation"](images/images-lecture1/zk-definition-simulation.png)
 
 
 This definition should apply even if a Verifier is not honest.
