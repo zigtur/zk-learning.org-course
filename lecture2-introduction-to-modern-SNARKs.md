@@ -304,4 +304,30 @@ Prover commits to a polynomial $f(X)$ in $F_p^{(\leqslant d)}[X]$
   * verifier accepts if $f(u) = v$ and $H((a_0, ..., a_d), r) = com_f$
 **The problem:** the proof $\pi$ is not succint. Proof size and verification time are **linear** in $d$.
 
-*Note:* 
+*Note:* KZG'10 achieves a constant-time proof $\pi$ independent in the degree $d$ and verification time is also constant and independent of degree $d$.
+
+
+###### A useful observation
+For a non-zero $f \in F_p^{(\leqslant d)}[X]$
+* $ r \leftarrow F_p$: $Pr[f(r)=0] \leqslant d/p $
+
+The answers is $d/p$ because a polynomial of degree $d$ has up to $d$ roots.
+
+So, the probability that $r$ is a root of $f$ (with $p$ possibilities for $r$ out of which $d$ are roots), is $d/p$.
+
+**Now suppose$ that $p \approx 2^{256}$ and $d \leqslant 2^{40}$ then $d/p$ is negligible.
+
+**So** for $r \leftarrow F_p$ : if $f(r)=0$ then $f$ is identically zero with high probability
+
+$\rightarrow$ a simple zero test for a committed polynomial. Taking a random number and testing if polynomial equals 0, we are able to say if it is a "zero" function.
+
+
+**Generalization**\
+**SZDL lemma**: the previous $Pr[f(r)=0] \leqslant d/p$ statement also holds for <u>multivariate</u> polynomials (where $d$ is total degree of $f$)
+
+The "total degree" of $f$ is the sum of all the degrees in the variables of $f$. For example, the total degree of $x^2 y^3$ is **5**.
+
+
+Let's prove the **SZDL lemma** statement:
+
+
