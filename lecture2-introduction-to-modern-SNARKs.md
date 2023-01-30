@@ -208,7 +208,7 @@ $$gp \leftarrow S_{init}(), (C,x,st) \leftarrow A_0(gp), w \leftarrow E(gp, C, x
 $Pr[C(x,w)=0] > 1/10^6 - \epsilon $ (for a negligible $\epsilon$)
 
 
-## Part3 - Building an efficient
+## Part3 - Building an efficient SNARK
 ### General paradigm: two steps
 1 - A functional commitment scheme: a cryptographic object
 
@@ -219,7 +219,7 @@ $Pr[C(x,w)=0] > 1/10^6 - \epsilon $ (for a negligible $\epsilon$)
 These 2 steps gathered output a SNARK for general circuits.
 
 
-#### Review: commitments
+#### Step 1 - Review: commitments
 Two algorithms: 
 -   $commit(m,r) \rightarrow com$ (with r chosen at random)
 -   $verify(m, com, r) \rightarrow$ accept or rejet
@@ -315,7 +315,7 @@ The answers is $d/p$ because a polynomial of degree $d$ has up to $d$ roots.
 
 So, the probability that $r$ is a root of $f$ (with $p$ possibilities for $r$ out of which $d$ are roots), is $d/p$.
 
-**Now suppose$ that $p \approx 2^{256}$ and $d \leqslant 2^{40}$ then $d/p$ is negligible.
+**Now suppose** that $p \approx 2^{256}$ and $d \leqslant 2^{40}$ then $d/p$ is negligible.
 
 **So** for $r \leftarrow F_p$ : if $f(r)=0$ then $f$ is identically zero with high probability
 
@@ -327,7 +327,78 @@ $\rightarrow$ a simple zero test for a committed polynomial. Taking a random num
 
 The "total degree" of $f$ is the sum of all the degrees in the variables of $f$. For example, the total degree of $x^2 y^3$ is **5**.
 
+The **SZDL lemma** statement is mathematically proved on this link : https://en.wikipedia.org/wiki/Schwartz%E2%80%93Zippel_lemma
 
-Let's prove the **SZDL lemma** statement:
 
+**Suppose** $p \approx 2^{256}$ and $d \leqslant 2^{40}$ so that $d/p$ is negligible :
+* Let $f, g \in F_p^{(\leqslant{d})}[X]$.
+  * For r \leftarrow F_p$, if $f(r) = g(r)$ then $f=g$
+  * Because $f(r) - g(r) = 0 \rightarrow f-g=0$
+  * $f-g$ is a zero polynomial
+
+##### Fiat-Sharmir transform
+"Public coin interactive protocol" can be made non-interactive.
+
+!["A SNARK for polynomial equality testing"](images/images-lecture2/snark-polynomial-equality-testing.png)
+
+
+#### Step 2 - IOP - Interactive Oracle Proof
+**Goal:** boost functional commitment $\rightarrow$ SNARK for general circuits
+
+Example:
+Polynomial commitment scheme for $F_p^{(\leqslant{d})}[X] \Longrightarrow$ Poly-IOP $\Longrightarrow$ SNARK for any circuit $C$ where $\|C\| < d$
+
+
+
+Let C(x,w) be some arithmetic circuit. Let $x \in F_p^n$.\ 
+F-IOP: a proof system that proves $\exists w : C(x,w)=0$ as follows:
+
+Setup(C) $\rightarrow$ public parameters **pp** and **vp**. But **vp** = ($f_0$, $f_{-1}$, ..., $f_{-s}$). Those are oracles for functions in $F$.
+
+!["F-IOP: proving that C(x,w)=0"](images/images-lecture2/f-iop-proving.png)
+
+##### Properties of an IOP
+* **Complete:** if $\exists w : C(x,w) = 0$ then $Pr$[verifier accepts] = 1
+* (Unconditional) **Knowledge sound** (as an IOP)
+  * [extractor is given $(x, f_1, r_1, ..., r_{t-1},f_t)$ and outputs $w$]
+* Optional: **zero knowledge** (for zk-SNARK)
+
+!["An example Poly-IOP"](images/images-lecture2/example-poly-iop.png)
+
+##### The IOP Zoo (SNARKs for general circuits)
+
+!["The IOP Zoo"](images/images-lecture2/IOP-Zoo.png)
+
+
+#### SNARKs in practice
+In practive, there are Domain Specific Language (Circom, ZoKrates, Leo, Zinc, ...) that will be compiled in a SNARK Friendly format (circuit, R1CS, ...).
+
+
+
+
+## Quiz Answers:
+### How are SNARKs different from IPs?
+* SNARKs are arguments and not proofs, i.e., they only provide computational soundness
+* All SNARKs have sublinear proof size
+* All SNARKs have sublinear verifier
+* All SNARKs prove NP statements
+* SNARKs are non-interactive
+* SNARKs are knowledge-sound
+
+
+### Which of the following are true about preprocessing SNARKs?
+* We can not construct SNARKs for general circuits without preprocessing
+* If the secrets used in the trusted setup are revealed, the SNARK prover can violate soundness
+
+
+### Which of the following are true about the components used to construct SNARKs?
+* Functional commitment schemes are SNARKs that support a restricted class of functions
+* An unbounded prover can't break the knowledge soundness of an Interactive oracle proof (IOP)
+* Functional commitments are used to instantiate the oracles in IOPs
+* To make a SNARK zero-knowledge, we have to use a hiding functional commitment scheme
+
+
+### Which of the following are true about the SNARK for polynomial equality testing?
+* The oracles in the corresponding IOP have a degree bound to ensure that any inconsistencies in the input polynomials are detected
+* The corresponding IOP can be made non-interactive using the Fiat-Shamir transform because it is public-coin
 
