@@ -259,3 +259,4 @@ So here:
 - $\phi$ is the rules
 - $x$ is the puzzle
 - $w$ is the solution
+

@@ -1,12 +1,17 @@
 pragma circom 2.0.0;
 
 template NonEqual() {
+    // The way to prove that two numbers are not equal is a bit confusing. Let's explain it:
+    // As a prime field is used, every number that is non-zero has an inverse
+    // We will calculate the inverse of (in0 - in1)
+    // If an inverse is found, (in0 - in1) is not zero because zero has no inverse
+    // and so in0 != in1
     signal input in0;
     signal input in1;
     // to check that (in0-in1) is non-zero
     signal inverse;
     inverse <-- 1/(in0 - in1);
-    inverse*(in0-in1) === 1;
+    inverse * (in0 - in1) === 1;
 }
 
 // all elements are unique in the array (row)
@@ -74,15 +79,18 @@ template Sudoku(n) {
     component distinctRow[n];
     for (var row=0; row < n; row++){
         distinctRow[row] = Distinct(n);
-        for (var col=0; col < n; col++){
+        distinctRow[row].in <== solution[row];
+        // The below code does the same as the above line, but it sets each variable individually
+        /*for (var col=0; col < n; col++){
             distinctRow[row].in[col] <== solution[row][col];
-        }
+        }*/
     }
 
     // ensure uniqueness in rows
     component distinctCol[n];
     for (var col=0; col < n; col++){
         distinctCol[col] = Distinct(n);
+        // The below code sets each variable individually to get column values
         for (var row=0; row < n; row++){
             distinctCol[col].in[row] <== solution[row][col];
         }
