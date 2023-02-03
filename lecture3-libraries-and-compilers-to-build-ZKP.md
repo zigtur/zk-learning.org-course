@@ -244,4 +244,18 @@ template Main () {
 }
 ```
 
+## Part2 - Programming ZKPs
+### Circom Tutorial
+#### Tutorial Example: Sudoku
+- 9 by 9 grid
+- Some cells have #s
+- Goal: fill all cells with 1..9
+- Rule: no duplicates in any:
+  - Column
+  - Row
+  - 3x3 sub-grid
 
+So here:
+- $\phi$ is the rules
+- $x$ is the puzzle
+- $w$ is the solution
