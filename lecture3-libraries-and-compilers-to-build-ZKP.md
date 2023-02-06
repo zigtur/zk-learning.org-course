@@ -423,5 +423,17 @@ We have seen 3 toolchain type:
 !["Summary"](images/images-lecture3/summary.png)
 
 
-
+### Quiz answers
+|Question|True or False|
+|---|---|
+|Preprocessing SNARKs prove assertions over arithmetic circuits	 | True |
+|Circuits and R1CS are equally expressive	 | True |
+|An advantage of the HDL approach over other approaches is that you can explicitly define wires and constraints	 | False |
+|A disadvantage of the HDL approach is limited abstraction features compared to other approaches	 | True |
+|An advantage of the library approach over other approaches is that it is easy to do arbitrary witness computation due to the expressiveness of the host language	 | True |
+|An advantage of the PL approach over other approaches is that it is easiest to learn	 | True |
+|circom's expressiveness is restricted due to the lack of support for private circuit outputs	 | False |
+|The verifier complexity is independent of the complexity of witness computation	 | True |
+|The inequality check discussed in the lecture requires R1CS constraints proportional to the complexity of inverse computation	 | False |
+|Witness computation can be performed in any computation model and is not tied to arithmetic circuits | True |
 
