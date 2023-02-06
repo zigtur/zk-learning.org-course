@@ -1,5 +1,5 @@
 # Libraries and Compilers to build ZKP
-## Part1 - Programming ZKPs
+## Programming ZKPs
 Guest Lecturers: Pratyush Mishra and Alex Ozdemir
 
 ### Using a ZKP
@@ -244,8 +244,6 @@ template Main () {
 }
 ```
 
-## Part2 - Programming ZKPs
-### Circom Tutorial
 #### Tutorial Example: Sudoku
 - 9 by 9 grid
 - Some cells have #s
@@ -259,4 +257,171 @@ So here:
 - $\phi$ is the rules
 - $x$ is the puzzle
 - $w$ is the solution
+
+#### Recap
+- An HDL for R1CS
+- Key features
+  - Direct control over constraints
+  - Custom language
+    - Can be good
+    - Can be bad
+
+### A library for R1CS
+- A library in a **host** language (like Rust, C++, Go, ...)
+- Key type: constraint system
+  - Maintains state about R1CS constraints and variables
+- Key operations:
+  - create variable
+  - create linear combinations of variables
+  - add constraint
+
+#### ConstraintSystem operations
+**Variable creation**
+- cs.add_var(p, v) -> id
+- cs: constraint system
+- p: visibility of variable
+- v: assigned value
+- id: variable handle
+
+**Linear Combination creation**
+- cs.zero(): returns the empty LC (Linear Combination)
+- lc.add(c, id) -> lc'
+  - id: variable
+  - c: coefficient
+  - lc' := lc + c * id
+
+**Adding constraints**
+- cs.constrain($lc_A, lc_B, lc_C$)
+  - Adds a constraint $lc_A \times lc_B = lc_C$
+
+#### Example: Boolean AND
+Note that it is **Boolean AND**, and not int or other.
+```rust
+fn and(cs: ConstraintSystem, a: Var, b: Var) -> Var {
+  let result = cs.new_witness_var(|| a.value() & b.value());
+  self.cs.enforce_constraint(
+    lc!() + a,
+    lc!() + b,
+    lc!() + result,
+  );
+  result
+}
+```
+
+#### Idea: Leverage Language Abstractions!
+We can use language abstractions like structs, operator, overloading, methods, etc. to allow better developer UX:
+
+```rust
+struct Boolean {var: Var};
+
+impl BitAnd for Boolean {
+  fn and(self: Boolean, other: Boolean) -> Boolean {
+    //same code as before (Boolean AND)
+    Boolean { var: result }
+  }
+}
+
+```
+
+Now we will be able to use high level syntax.
+We can use abstractions like normal code:
+```rust
+let a = Boolean::new_witness(|| true);
+let b = Boolean::new_witness(|| false);
+(a & b).enforce_equal(Boolean::FALSE);
+```
+
+There are many different gadget libraries:
+- libsnark: gadgetlib (C++)
+- arkworks: r1cs-std + crypto-primitives (Rust)
+- Snarky (Ocaml)
+- Gnark (Go)
+
+#### What about Witness Computation
+- Can perform arbitrary computations to generate witnesses
+```rust
+let a = Boolean::new_witness(|| (4 == 5) & (x < y));
+let b = Boolean::new_witness(|| false);
+(a & b).enforce_equal(Boolean::FALSE);
+```
+
+#### HDLs & Circuit Libraries
+**Differences**
+- Host language VS custom language
+**Similarities**
+- explicit wire creation (explicitly wire values)
+- explicit constraint creation
+
+The question is: "Do we need to explicitly build a circuit?" --> NO
+
+### Compiling a Programming Language to R1CS
+#### Compiling Programming Language to Circuits
+We take a program with:
+- Variables
+- Mutation
+- Functions
+- Arrays
+
+We take it through a compiler and get a R1CS with wires and constraints.
+
+#### ZoKrates: Syntax
+- Struct syntax for custom types
+- Variables contain values during execution/proving
+- Can annotate privacy (what does the verifier know and doesn't)
+- "assert" creates constraints
+
+!["ZoKrates: Syntax"](images/images-lecture3/zokrates-syntax.png)
+
+#### Zokrates: Language features
+- Integer generics (like function on number)
+- Arrays
+- Variables
+  - Mutable
+- Fixed-length loops
+- If expressions
+- Array accesses
+
+#### What about Witness Computation?
+- No way to compute witnesses
+- All witnesses must be provided as input
+
+
+#### Zokrates: Tutorial
+See code
+
+
+### ZKP Toolchains: A Quick Tour
+We have seen 3 toolchain type:
+- HDL: a language for describing circuit synthesis
+  - Circom
+- Library: a library for describing circuit synthesis
+  - Arkworks (Rust)
+  - Gadgetlib (C++)
+  - Bellman (Rust)
+  - Snarky (OCaml)
+  - PLONKish (Rust)
+- Programming Language + Compiler : a language, compiled to a circuit
+  - ZoKrates
+  - Noir
+  - Leo
+  - Cairo
+
+
+!["Toolchain Types"](images/images-lecture3/toolchain-types.png)
+
+
+#### Kind of Constraint Systems
+- R1CS
+- Plonk
+- AIR
+
+!["Shared Compiler Infrastructure"](images/images-lecture3/shared-compiler-infrastructure.png)
+
+
+### Summary
+
+!["Summary"](images/images-lecture3/summary.png)
+
+
+
 

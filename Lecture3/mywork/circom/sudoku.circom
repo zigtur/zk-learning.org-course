@@ -95,6 +95,8 @@ template Sudoku(n) {
             distinctCol[col].in[row] <== solution[row][col];
         }
     }
+
+    
 }
 
 component main {public[puzzle]} = Sudoku(9);
