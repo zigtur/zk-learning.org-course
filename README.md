@@ -5,3 +5,8 @@ This repository contains my notes concerning the Zero Knowledge Proofs course av
 ## Disclaimer
 All the given informations could be wrong and are only my understanding of the course. I do not have special degree in maths, but one in cybersecurity.
 Maths part could eventually be wrong.
+
+
+
+## Other resources
+Those notes are crazy: https://crypto-notes-erhant.vercel.app/

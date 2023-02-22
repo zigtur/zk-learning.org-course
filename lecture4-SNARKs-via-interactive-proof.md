@@ -80,7 +80,7 @@ The **Schwartz-Zippel-Demillo-Lipton lemma** is a multivariate generalization:
 
 ### Low-Degree and Multilinear Extensions
 - Definition of Extensions: Given a function $f:\{0,1\}^l \rightarrow F$, a $l$-variate polynomial $g$ over $F$ is said to **extend** $f$ if $f(x) = g(x)$ for all $x \in \{0,1\}^l$.
-- Definition of Multinlinear Extensions: Any function $f:\{0,1\}^l \rightarrow F$ has a **unique** multilinear extension (MLE), denoted $\tilde{f}$.
+- Definition of Multinlinear Extensions: Any function $f:\{0,1\}^l \rightarrow F$ has a **unique** multilinear extension (MLE), denoted $\widetilde{f}$.
   - Multilinear means the polynomial has degree at most 1 in each variable.
   - $(1-x_1)(1-x_2)$ is multilinear, and $x_1^2 x_2$ is not.
 
@@ -99,7 +99,7 @@ The multilinear extension is used because, if one input is not the good one, the
 
 
 #### Evaluating multilinear extensions quickly
-- Fact: Given as input all $2^l$ evaluations of a function $f:\{0,1\}^l \rightarrow F$, for any point $r \in F^l$ there is an $O(2^l)$-time algorithm for evaluating $\tilde{f}(r)$.
+- Fact: Given as input all $2^l$ evaluations of a function $f:\{0,1\}^l \rightarrow F$, for any point $r \in F^l$ there is an $O(2^l)$-time algorithm for evaluating $\widetilde{f}(r)$.
   - Sketch: Use Lagrange interpolation.
 
 !["Evaluating Multilinear extensions quickly"](images/images-lecture4/evaluating-multilinear.PNG)
@@ -143,15 +143,15 @@ $$Pr_{r_{1} \in F}[s_1(r_1)=H(r_1)] + Pr_{r_2,...,r_l \in F}[V\ accepts| s_1(r_1
 !["Function mapping example"](images/images-lecture4/function-mapping-matrix.png)
 - The protocol:
   - View $A$ as a function mapping ${0,1}^{log(n)} \times {0,1}^{log(n)}$ to $F$.(see picture)
-  - As we have seen before, $A$ has a multilinear extension $\tilde{A}$.
-  - Define the polynomial $g(X,Y,Z) = \tilde{A}(X,Y)\tilde{A}(Y,Z)\tilde{A}(X,Z)$. Note $X,Y,Z$ are now bit vectors.
+  - As we have seen before, $A$ has a multilinear extension $\widetilde{A}$.
+  - Define the polynomial $g(X,Y,Z) = \widetilde{A}(X,Y)\widetilde{A}(Y,Z)\widetilde{A}(X,Z)$. Note $X,Y,Z$ are now bit vectors.
   - Apply the sum-check protocol to $g$ to compute:
   $$ \sum_{(a,b,c)\in \{0,1\}^{3log(n)}} g(a,b,c)$$
 
 - Costs:
   - Total communication is $O(log(n))$, $V$ runtime is $O(n^2)$, $P$ runtime is $O(n^3)$.
   - $V$'s runtime dominated by evaluating:
-$$ g(r_1,r_2,r_3) = \tilde{A}(r_1,r_2)\tilde{A}(r_2,r_3)\tilde{A}(r_1,r_3)$$
+$$ g(r_1,r_2,r_3) = \widetilde{A}(r_1,r_2)\widetilde{A}(r_2,r_3)\widetilde{A}(r_1,r_3)$$
 
 ### A SNARK for circuit-satisfability
 #### Recall: SNARKs for circuit-satisfability
@@ -182,7 +182,7 @@ We first need to construct a $(3log(s))$-variate polynomial $g_h$ such that $h$ 
   - Moreover, to evaluate $g_h(r)$ at any input $r$, it suffices to evaluate $h$ at only 3 inputs.
 
 Proof sketch (simplifcation): Define $g_h(a,b,c) via:
-$$\tilde{add}(a,b,c) . (h(a)-(h(b)+h(c))) + \tilde{mult}(a,b,c) . (h(a)-h(b).h(c)) \$$
+$$\widetilde{add}(a,b,c) . (h(a)-(h(b)+h(c))) + \widetilde{mult}(a,b,c) . (h(a)-h(b).h(c)) \$$
   - 1. $g_h(a,b,c) = h(a)-(h(b)+h(c))$ if $a$ is the label of a gate that computes the **sum** of gates $b$ and $c$
   - 2. $g_h(a,b,c) = h(a)-h(b).h(c)$ if $a$ is the label of a gate that computes the **product** of gates $b$ and $c$
   - 3. $g_h(a,b,c) = 0$ otherwise
