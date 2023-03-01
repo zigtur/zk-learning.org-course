@@ -77,7 +77,7 @@ Note: Quantum computers will be able to solve this discrete-log problem on polyn
     - $\mathbb{G}$ and $\mathbb{G}_T$ are both multiplicative cyclic group of order $p$. $g$ is the generator of $\mathbb{G}$
     - $\mathbb{G}$: base group, $\mathbb{G}_T$: target group
 - Pairing: $e(P^x,Q^y) = e(P,Q)^{xy} : \mathbb{G} \times \mathbb{G} \rightarrow \mathbb{G}_T$
-- Example: $e(g^x, g^y) = e(g,g)^{xy} = e(g^{xy}, g)
+- Example: $e(g^x, g^y) = e(g,g)^{xy} = e(g^{xy}, g)$
     - Given $g^x$ and $g^y$, a pairing can **check** that some element $h = g^{xy}$ without knowing $x$ and $y$
 
 ### Example: BLS signature
@@ -88,6 +88,85 @@ Note: Quantum computers will be able to solve this discrete-log problem on polyn
 
 - $Verify(\sigma, m):\ e(H(m), g^x) = e(\sigma, g)$
     - and so we have : $e(H(m), g^x) = e(H(m)^x,g)$ as $\sigma = H(m)^x$
+
+## KZG Polynomial commitment
+Introduced by Kate-Zaverucha-Goldberg
+
+
+First: $keygen(\lambda, \mathbb{F}) \rightarrow gp$
+```mermaid
+sequenceDiagram
+    actor Prover
+    Prover ->> Prover: f(x) in F
+    Prover ->> Verifier: commit(f) -> com_f
+    Verifier -->> Prover: u
+    Prover ->> Verifier: eval(gp, f, u) --> v, pi
+    Verifier -->> Verifier: accept OR reject (verify function)
+```
+
+### KZG poly-commit scheme
+- Bilinear Group $p, \mathbb{G}, g, \mathbb{G}_T, e$
+- Univariate polynomials $\mathbb{F} = \mathbb{F}_p^{\leqslant d}[X]$
+- $keygen(\lambda, \mathbb{F}) \rightarrow gp$
+  - Sample random $\tau \in \mathbb{F}_p$
+  - $gp = (g, g^{\tau}, g^{\tau^{2}}, g^{\tau^{3}}, ..., g^{\tau^{d}})$
+  - delete $\tau$ !!! **(trusted setup)**
+- $commit(gp, f) \rightarrow com_f$ :
+  - $f(x) = f(0) + f_1 x + f_2 x^2 + ... + f_d x^d
+  - $com_f = g^{f(\tau)}$
+    - $= g^{f_0 + f_1 \tau + f_2 \tau^2 + ... + f_d \tau^d}$
+    - $= (g)^{f_0} \cdot (g^{\tau})^{f_1} \cdot (g^{\tau^{2}})^{f_2} \cdot ... \cdot (g^{\tau^{d}})^{f_d} $
+    - This because addition becomes multiplication in exponent, and multiplication becomes exponentiation in exponent.
+    - And so, for the last expression, each parameter $g$ is part of the global parameter
+- $eval(gp, f, u) \rightarrow v, \pi$
+  - $f(x) - f(u) = (x-u) q(x)$, as $u$ is a root of $f(x) - f(u)$
+  - Compute $q(x)$ and $\pi = g^{q(\tau)}$, using $gp$
+- With an honnest prover: $com_f = g^{f(\tau)}$, $\pi = g^{q(\tau)}$, $v=f(u)$
+- $verify(gp, com_f, u, v, \pi)$ :
+  - Idea: check the equation at point $\tau$: $g^{f(\tau)-f(u)} = g^{(\tau - u)q(\tau)}$ BUT IT DOESN'T WORK
+  - Challenge: only know $g^{(\tau - u)}$ and $g^{q(\tau)}$
+  - Solution: pairing! $e(com_f/g^v, g) = e(g^{\tau - u}, \pi)$
+    - $e(g,g)^{f(\tau) - f(u)} = e(g, g)^{(\tau - u) q(\tau)}$
+      - because (check "With an honnest prover" part): 
+        - $com_f/g^v = g^{f(\tau)} / g^{f(u)} = g^{f(\tau) - f(u)}$
+        - $\pi = g^{q(\tau)}$
+
+!["KZG Polynomial commitment - Summary"](images/images-lecture6/kzg-polynomial-commitment-summary.PNG)
+
+
+### Soundness of the KZG scheme
+q-Strong Bilinear Diffie-Hellman (q-SBDH) assumption:
+  - Given $(g, \mathbb{G}, g, \mathbb{G}_T, e), (g, g^{\tau}, g^{\tau^2}, ..., g^{\tau^d})$, cannot compute $e(g, g)^{\frac{1}{\tau - u}}$ for any $u$
+
+
+Proof by contradiction: Suppose $v^* \neq f(u)$, $\pi^*$ pass the verification
+  - $e(com_f/g^{v^*}, g) = e(g^{\tau - u}, \pi^*)$
+  - $e(g^{f(\tau)-v^*}, g) = e(g^{\tau - u}, \pi^*)$  --> Knowledge assumption 
+  - $ \Leftrightarrow e(g^{f(\tau) - f(u) + f(u) -v^*}, g) = e(g^{\tau - u}, \pi^*)$, define $\delta = f(u) - v^*$
+  - $\Leftrightarrow e(g^{(\tau - u) q(\tau) + \delta}, g) = e(g^{\tau - u}, \pi^*)$
+  - $ \Leftrightarrow e(g, g)^{(\tau - u) q(\tau) + \delta} = e(g, \pi^*)^{\tau - u}$
+  - $ \Leftrightarrow e(g, g)^{\delta} = (e(g, \pi^*)/e(g,g)^{q(\tau)})^{\tau - u}$
+  - $ \Leftrightarrow e(g, g)^{\frac{\delta}{\tau - u}} = e(g, \pi^*)/e(g,g)^{q(\tau)}$ and this **does break q-SBDH assumption !!!**
+
+### Knowledge soundness and KoE assumption
+- Why the prover knows $f$ such that $com_f = g^{f(\tau)}$
+- Knowledge of Exponent assumption:
+  - $g, g^{\tau}, g^{\tau^2}, ..., , g^{\tau^d}$
+  - Sample random $\alpha$, compute $g^{\alpha}, g^{\alpha \tau}, g^{\alpha \tau^2} ,..., g^{\alpha \tau^d}$
+  - $com_f = g^{f(\tau)}$, $com'_f = g^{\alpha f(\tau)}$
+  - If $e(com_f, g^{\alpha}) = e(com'_f, g)$, there exists an extractor $E$ that extracts $f$ such that $com_f = g^{f(\tau)}$
+
+### KZG with knowledge soundness
+- Keygen: $gp$ includes $g, g^{\tau}, g^{\tau^2}, ..., , g^{\tau^d}$ and $g^{\alpha}, g^{\alpha \tau}, g^{\alpha \tau^2} ,..., g^{\alpha \tau^d}$
+- Commit: $com_f = g^{f(\tau)}$ , $com'_f = g^{\alpha f(\tau)}$
+- Verify: additionally checks $e(com_f, g^{\alpha}) = e(com'_f, g)$
+
+- Knowledge soundness proof: extract $f$ in the first step by the KoE assumption
+
+But this does double the proof size and verification time
+
+
+
 
 
 
