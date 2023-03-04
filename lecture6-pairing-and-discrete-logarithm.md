@@ -157,7 +157,7 @@ Proof by contradiction: Suppose $v^* \neq f(u)$, $\pi^*$ pass the verification
   - If $e(com_f, g^{\alpha}) = e(com'_f, g)$, there exists an extractor $E$ that extracts $f$ such that $com_f = g^{f(\tau)}$
 
 ### KZG with knowledge soundness
-- Keygen: $gp$ includes $g, g^{\tau}, g^{\tau^2}, ..., , g^{\tau^d}$ and $g^{\alpha}, g^{\alpha \tau}, g^{\alpha \tau^2} ,..., g^{\alpha \tau^d}$
+- Keygen: $gp$ includes $g, g^{\tau}, g^{\tau^2}, ..., g^{\tau^d}$ and $g^{\alpha}, g^{\alpha \tau}, g^{\alpha \tau^2} ,..., g^{\alpha \tau^d}$
 - Commit: $com_f = g^{f(\tau)}$ , $com'_f = g^{\alpha f(\tau)}$
 - Verify: additionally checks $e(com_f, g^{\alpha}) = e(com'_f, g)$
 
@@ -165,13 +165,119 @@ Proof by contradiction: Suppose $v^* \neq f(u)$, $\pi^*$ pass the verification
 
 But this does double the proof size and verification time
 
+### Generic Group Model - GGM
+- (Informal) Adversary is only give an oracle to compute the group operation:
+  - Given $g, g^{\tau}, g^{\tau^2}, ..., , g^{\tau^d}$, Adversary can only compute their linear combinations
+- GGM can replace the KoE assumption and reduce the commitment size in KZG.
+- Resource: "A Graduate Course in Applied Cryptography" by Dan Boneh and Victor Shoup
+
+### Properties of the KZG Poly-commit
+- Keygen: trusted setup!
+- Commit: $O(d)$ group exponentiations, $O(1)$ commitment size
+- Eval: $O(d)$ group exponentiations
+  - $q(x)$ can be computed efficiently in linear time!
+- Proof size: O(1), 1 group element
+- Verifier time: O(1), 1 pairing
+
+KZG is really efficient, but it does need a trusted setup...
+
+### Ceremony
+A distributed generation of $gp$ such that no one can reconstruct the trapdoor if at least one of the participants is honest and discards their secrets :
+- $gp=(g^{\tau}, g^{\tau^2}, ..., g^{\tau^d}) = (g_1, g_2, ..., g_d)$ 
+- Sample random $s$, update $gp' = (g'_1, g'_2, ..., g'_d) = (g_1^{s}, g_2^{s^2}, ..., g_d^{s^d}) = (g^{\tau s}, g^{(\tau s)^2}, ..., g^{(\tau s)^d})$ with secret $\tau s$ !!!
+- Check the correctness of $gp'$
+  - 1. The contributor knows $s$ such that $g'_1 = (g_1)^s$
+  - 2. $gp'$ consists of consecutive powers $e(g'_i, g'_1) = e(g'_{i+1}, g)$, and $g'_1 \neq 1$ 
 
 
+## Variants of KZG polynomial commitment
+### Multivariate poly-commit
+E.g., $f(x_1, ..., x_k) = x_1 x_3 + x_1 x_4 x_5 + x_7$
+- Key idea: $f(x_1, ..., x_k) - f(u_1, ..., u_k) = \sum_{i=1}^{k}(x_i-u_i)q_i(\vec{x})$
+- Keygen: sample $\tau_1, \tau_2, ..., \tau_k$, compute $gp$ as $g$ raised to all possible polynomials of $\tau_1, \tau_2, ..., \tau_k$ (e.g., 2^k monomials for multilinear polynomial)
+- Commit: com_f = g^{f(\tau_1, \tau_2, ..., \tau_k)}
+- Eval: compute $\pi_i = g^{q_i(\vec{\tau})}$
+- Verify: $e(com_f/g^v, g) = \prod_{i=1}^k e(g^{\tau_i - u_i}, \pi_i)$
+
+Performance: $O(log N)$ proof size and verifier time (with N total size of polynomial)
+
+### Achieving zero-knowledge
+- KZG is not ZK. E.g., $com_f = g^{f(\tau)}$ is deterministic
+- Solution: masking with randomizers:
+  - Commit: $com_f = g^{f(\tau + rn)}$
+  - Eval: $f(x) + r y - f(u) = (x-u) (q(x) + r' y) + y(r-r'(x-u))$ (with $y=n$)
+    - $\pi = g^{q(\tau) +r'n}, g^{r-r'(\tau-u)} $
 
 
+### Batch opening: single polynomial
+Prover wants to prove $f$ at $u_1, u_2, ..., u_m$ for $m < d$
+Key idea:
+- Extrapolate $f(u_1), ..., f(u_m)$ to get $h(x)$
+- $f(x) - h(x) = \prod_{i=1}^m (x-u_i)q(x)$
+- $\pi = g^{q(\tau)}$
+- $e(com_f/g^{h(\tau)}, g) = e(g^{\prod_{i=1}^m (\tau-u_i)}, \pi)$
+
+### Batch opening: multiple polynomial
+Prover wants to prove $f_i(u_{i,j}) = v_{i,j}$ for $i \in [n], j\in [m]$
+Key idea:
+- Extrapolate $f_i(u_1), ..., f(u_m)$ to get $h_i(x)$ for $i \in [n]$
+- $f_i(x) - h_i(x) = \prod_{i=1}^m (x-u_m)q_i(x)$
+- Combine all $q_i(x)$ via a random linear combination
+
+### Plonk
+Plonk Polynomial IOP + Univariate KZG => SNARK for general circuits
+
+## Polynomial commitments based on discrete-log
+### Recall KZG poly-commit
+|Pros                      | Cons                 |
+|--------------------------|----------------------|
+| - Commitment and proof size: $O(1)$, 1 group element <br /> - Verifier time: $O(1)$ pairing| Keygen: trusted setup |
 
 
+### Bulletproofs
+Transparent setup: sample random $gp = (g_0, g_1, g_2, ..., g_d) in \mathbb{G}$
+- Commit: $f(x) = f_0 + f_1 x + f_2 x^2 + ... + f_d x^d$
+- $com_f = g_0^{f_0} g_1^{f_1} g_2^{f_2} ... g_d^{f_d}$ (Pedersen vector commitment)
+
+#### High-level idea
+![Bulletproof: High level idea](images/images-lecture6/Bulletproof-HighLevelIdea.PNG)
 
 
+#### Poly-commitment based on Bulletproofs
+![Bulletproof: Polynomial commitment](images/images-lecture6/Bulletproof-Poly-commitment.PNG)
 
+We know: $com_f = g_0^{f_0} g_1^{f_1} g_2^{f_2} g_3^{f_3}$ , $L =  g_2^{f_0}  g_3^{f_1}$ , $R =  g_0^{f_1}  g_1^{f_3}$
+$$com' = L^r \cdot com_f \cdot R^{r-1}$$
+$$ com' = g_0^{f_0 + r^{-1} f_2} g_2^{r f_0 + f_2} g_1^{f_1 + f_3 r^{-1}} g_3^{r f_1 + f_3}$$
+$$ com' = (g_0^{r^{-1}} g_2)^{rf_0 + f_2} \cdot (g_1^{r^{-1}} g_3)^{rf_1 + f_3}$$
+$$ gp' = (g_0^{r^{-1}}g_2, g_1^{r^{-1}}g_3)$$
+
+
+- Eval: 
+  - 1. Compute $L,R,v_L, v_R$
+  - 2. Receive $r$ from verifier, reduce $f$ to $f'$ of degree $\frac{d}{2}$
+  - 3. Update the bases $gp'$
+
+- Verify:
+  - 1. Check $v = v_L + v_R \cdot u^{d/2}$
+  - 2. Generate $r$ randomly
+  - 3. Update $com' = L^r \cdot com_f \cdot R^{r-1}$, $gp'$, $v' = r v_L + v_R$
+
+And recurse this $log(d)$ times
+
+#### Properties of Bulletproofs
+![Bulletproof: Polynomial commitment](images/images-lecture6/Bulletproof-Properties.PNG)
+
+
+#### Derived schemes
+**Hyrax** is a derived scheme that has a proof size $O(\sqrt{d})$.
+
+**Dory** improves verifier time to $O(log(d))$:
+  - Key idea: delegating the structured verifier computation to the prover using inner pairing product arguments
+  - Also improves the prover time to $O(\sqrt{d})$ exponentiations plus $O(d)$ field operations
+
+**Dark** achieves $O(log(d))$ proof size and verifier time. Group of unknown order$
+
+
+![Summary](images/images-lecture6/lecture6-summary.PNG)
 
